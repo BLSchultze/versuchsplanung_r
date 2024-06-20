@@ -1,0 +1,412 @@
+<!-- Dokumentation zur R shiny-App 'Versuchsplanung'
+     (optimiert zur Darstellung innerhalb der App)
+   Author: Bjarne Schultze [last changed: 02.07.2023] -->
+
+<style>
+#buttonUp {
+  width: auto;
+  background-color: #D7F0FF;
+  opacity: 0.5;
+  font-size: 10pt;
+  text-align: center;
+  font-weight: bolder;
+  border-radius: 5px;
+}
+formel {
+  font-style: italic;
+  font-family: serif;
+}
+code {
+  font: Verdana;
+  background-color: #DFDFDF;
+  color: #2b66c4;
+  border-radius: 3px;
+  padding: 2 5 2 5;
+}
+
+table.tabelleTest, td.tabelleTest {
+  border-collapse: collapse;
+  border: 2px solid black;
+  padding: 5px;
+  font-size: 10pt;
+}
+
+th.tabelleTest {
+  border: 2px solid black;
+  padding: 5px;
+  text-align: left;
+  background-color: #f3f7ff;
+}
+.tabErklaerung {
+  font-size: 10pt;
+}
+
+</style>
+
+<!--Beginn des Inhalts-->
+<h2 id="oben">Anleitung und Dokumentation</h2>
+
+<h3>Inhalt</h3>
+<nav>
+  <ol>
+    <li><a href="#intention">Intention der App</a></li>
+    <li><a href="#hintergrund">Statistischer Hintergrund</a></li>
+    <li><a href="#bedienung">Bedienungshinweise</a></li>
+    <li><a href="#interpretation">Interpretation der Ergebnisse</a></li>
+    <li><a href="#funktion">Hinweise zur Implementierung</a></li>
+  </ol>
+</nav>
+
+</div>
+
+<h3 id="intention">Wozu ist die App gedacht?</h3>
+<p>Das Hauptziel ist Versuchsplanungen zu unterstützen und zu erleichtern.
+Die App kann in diesem Zusammenhang helfen den benötigten Stichprobenumfang
+für ein Projekt zu ermitteln. Ausgegangen wird dabei von Parametern, die in
+Vorversuchen abgeschätzt wurden, sowie dem gewünschten Signifikanzniveau und
+der statistischen Power, die erreicht werden soll. Es werden der t-Test und
+die Analysis of Variance (ANOVA) unterstützt. Außerdem kann die App dazu benutzt
+werden im Nachhinein (post-hoc) die erzielte Power zu berechnen.</p>
+
+<h3 id="hintergrund">Kurzer statistischer Hintergrund</h3>
+<p>Im Rahmen der 'klassischen' Teststatistik ist es das Ziel eine
+wissenschaftliche Hypothese zu wiederlegen, um ihr Gegenteil zu beweisen. In der
+Regel ist das Ziel Unterschiede nachzuweisen. In der Alternativhypothese
+(H<sub>A</sub>) wird der Unterschied formuliert, der nachgewiesen werden soll.
+Die Nullhypothese (H<sub>0</sub>) wird als Gegenteil der Alternativhypothese
+formuliert. Um die Alternativhypothese anzunehmen, wird versucht die
+Nullhypothese auf Basis statistischer Tests wie dem t-Test oder der ANOVA
+abzulehnen. Beim statistischen Testen können vier verschiedene Ergebnisse
+eintreten, die in der Tabelle unten aufgeführt sind. </p>
+
+<table style="width:50%", class="tabelleTest">
+  <tr>
+    <th style="width:20%", class="tabelleTest"></th>
+    <th style="width:40%", class="tabelleTest">H<sub>0</sub> abgelehnt <br>
+        H<sub>A</sub> angenommen <br><br>
+        Unterschied nachgewiesen</th>
+    <th style="width:40%", class="tabelleTest">H<sub>0</sub> nicht abgelehnt <br>
+        H<sub>A</sub> nicht angenommen <br><br>
+        Kein Unterschied nachgewiesen</th>
+  </tr>
+  <tr>
+    <th class="tabelleTest">H<sub>A</sub> wahr <br>
+        H<sub>0</sub> falsch <br><br>
+        Unterschied vorhanden</th>
+    <td class="tabelleTest">richtige Annahme von H<sub>A</sub><br>
+        Power/Teststärke <br>
+        Wahrscheinlichkeit 1-&beta;</td>
+    <td class="tabelleTest">falsche Nicht-Annahme von H<sub>A</sub><br>
+        &beta;-Fehler/Fehler 2. Art <br>
+        Wahrscheinlichkeit &beta;</td>
+  </tr>
+  <tr>
+    <th class="tabelleTest">H<sub>A</sub> falsch <br>
+        H<sub>0</sub> wahr <br><br>
+        Kein Unterschied vorhanden</th>
+    <td class="tabelleTest">falsche Annahme von H<sub>A</sub><br>
+        &alpha;-Fehler/Fehler 1. Art <br>
+        Wahrscheinlichkeit &alpha;</td>
+    <td class="tabelleTest">richtige Nicht-Annahme von H<sub>A</sub><br>
+        Sicherheitswahrscheinlichkeit <br>
+        Wahrscheinlichkeit 1-&alpha;</td>
+  </tr>
+</table>
+
+<h3 id="bedienung">Wie ist die App zu bedienen?</h3>
+Im Eingagebereich (farblich abgesetzt) kann zunächst der Modus der App
+ausgewählt werden. Es kann entweder der benötigte Stichprobenumfang für geplante
+Versuche (a-priori) berechnet werden oder im Nachhinein von Versuchen (post-hoc)
+die erzielte Power ermittelt werden. Als zweites wird der gewünschte
+statistische Test gewählt. Entsprechend der Auswahl ändern sich die
+Angaben, die benötigt werden.
+<h5>Für alle statistischen Tests</h5>
+<ul>
+  <li><b>Signifikanzniveau</b><br>
+    gewünschtes Signifikanzniveau (&alpha;) für den statistischen Test, Standard-
+    Einstellung: 0.05 (5 %). Das Signifikanzniveau gibt die Wahrscheinlichkeit
+    für falsch positive Testergebnisse an,
+    <img width="75px" src="alphaFehler_formal.png"/>.
+
+    <li><b>Power [nur im a-priori Modus]</b><br>
+      gewünschte Power (1-&beta;) für den statistischen Test, Standard-
+      Einstellung: 0.8 (80 %). Die Power eines statistischen Test beschreibt die
+      Wahrscheinlichkeit, dass ein vorhandener Unterschied auch nachgewiesen wird,
+      <img width="75px" src="power_formal.png"/>. Soll die Power post-hoc
+      berechnet werden, fehlt dieses Eingabefeld.
+    </li>
+</ul>
+<h5>Für den t-Test</h5>
+<ul>
+  <li><b>Anzahl der Stichproben</b><br>
+    Da mit einem t-Test entweder der Mittelwert einer Stichprobe auf einen gegebenen
+    Mittelwert getestet werden kann (Ein-Stichproben-Test) oder die Mittelwerte
+    zweier Stichproben gegeneinander getestet werden können (Zwei-Stichproben-Test),
+    muss die Anzahl der Stichproben angegeben werden. Bei einem Versuchdesign mit
+    zwei Stichproben ist zudem zwischen gepaarten und ungepaarten Stichproben zu
+    unterscheiden. Um gepaarte Stichproben handelt es sich, wenn die gleichen
+    Objekte zweifach untersucht wurden. Es besteht eine 1-zu-1 Zuordnung zwischen
+    den Elementen der beiden Stichproben.</li>
+  <li><b>Richtung des Tests</b><br>
+    Ein t-Test kann entweder ungerichtet oder gerichtet durchgeführt werden.
+    Gerichtet (auch einseitig) bedeutet dabei, dass explizit getestet wird, ob ein
+    Mittelwert entweder größer (rechtsseitiger Test) oder kleiner (linksseitiger
+    Test) ist. Ein ungerichteter Test gibt nur Auskunft, ob ein Unterschied
+    vorhanden ist, aber nicht in welche Richtung dieser Unterschied vorliegt.
+  </li>
+  <li><b>Stichprobenumfang (pro Gruppe) [nur im post-hoc Modus]</b>
+    Hier wird der erzielte Stichprobenumfang pro Gruppe angegeben. Wenn zuvor eine
+    Versuchsplanung durchgeführt wurde, entspricht der tatsächliche Stichprobenumfang
+    im Idealfall dem a-priori berechneten Umfang.
+  </li>
+  <li><b>Mittelwertsabstand und Standardabweichung</b><br>
+    Für eine erfolgreiche Versuchsplanung müssen Vorversuche in kleinem Maßstab
+    durchgeführt werden. Aus diesen Vorversuchen wird dann der Abstand des
+    Mittelwertes der Stichprobe vom zu testenden Mittelwert (im Ein-Stichproben-
+    Fall) oder der Abstand der Mittelwerte beider Stichproben (im Zwei-Stichproben-
+    Fall) ermittelt. Auch die Standardabweichung wird aus den Vorversuchen
+    abgeschätzt. Beide Größen haben großen Einfluss auf den benötigten
+    Stichprobenumfang, da kleine Mittelwertsunterschiede bei gleichzeitig großen
+    Standardabweichungen zu großen Stichprobenumfängen führen. Im post-hoc Modus
+    werden die beiden Größen nicht geschätzt, sondern aus den erhobenen Daten
+    berechnet.
+  </li>
+</ul>
+
+<h5>Für die ANOVA</h5>
+<ul>
+    <li><b>Anzahl der Gruppen</b><br>
+      Der einfaktoriellen (oneway) ANOVA liegt ein Versuchsdesign mit einem
+      Faktor, einer kontrollierten Einflussvariablen, zugrunde. Die Anzahl der
+      Gruppen gibt an, wie viele Faktorstufen es gibt, also wie viele verschiedene
+      Versuchsbedingungen es in Hinblick auf die Einflussvariable gibt.
+    </li>
+    <li><b>Stichprobenumfang (pro Gruppe) [nur im post-hoc Modus]</b>
+      Hier wird der erzielte Stichprobenumfang pro Gruppe angegeben. Wenn zuvor eine
+      Versuchsplanung durchgeführt wurde, entspricht der tatsächliche Stichprobenumfang
+      im Idealfall dem a-priori berechneten Umfang.
+    </li>
+    <li><b>Effektstärke (abgeschätzt)</b> und <b>Effektstärkemaß</b><br>
+      Wie für den t-Test, müssen für eine ANOVA Vorversuche in kleinerem Maßstab
+      durchgeführt werden, um eine Versuchsplanung vorzunehmen. Aus diesen
+      Vorversuchen kann die Effektstärke abgeschätzt werden. Die Effektstärke
+      möglichst gut abzuschätzen, ist ein wichtiger Aspekt der Versuchsplanung,
+      da sie einen großen Einfluss auf den benötigten Stichprobenumfang hat.
+      Generell werden größere Stichproben benötigt, wenn die Effektstärke klein
+      ist. Für die ANOVA gibt es verschiedene Effektstärkemaße, wobei
+      <formel>f</formel> und <formel>&eta;<sup>2</sup></formel> die
+      verbreitetsten sind. Über die Button-Auswahl können beide Effektstärkemaße
+      eingegeben werden. Eine Umrechnung erfolgt intern
+      (weitere Informationen unter <a href="#funktion">Hinweise zur
+      Implementierung</a>). Laut Cohen (1988) gilt grob die Einteilung:
+      <formel>f</formel> = 0.1 (<formel>&eta;<sup>2</sup></formel> = 0.01) kleiner Effekt,
+      <formel>f</formel> = 0.25 (<formel>&eta;<sup>2</sup></formel> = 0.06) mittlerer Effekt,
+      <formel>f</formel> = 0.4 (<formel>&eta;<sup>2</sup></formel> = 0.14) großer Effekt.
+    </li>
+</ul>
+
+<p>Der 'Berechnen'-Button löst die Berechnung des benötigten Stichprobenumfangs
+bzw. der erzielten Power aus. Gleichzeitig wird das Ergebnis graphisch dargestellt.
+Wann immer Parameter geändert werden, werden diese erst berücksichtigt, wenn das
+nächste Mal auf 'Berechnen' geklickt wird.</p>
+
+<h3 id="interpretation">Wie sind die Ergebnisse zu interpretieren?</h3>
+<p>In der rechten Hälfte der App werden die Ergebnisse unter entsprechender
+Überschrift angezeigt.
+<h4>A-priori Berechnung des Stichprobenumfangs</h4>
+Es werden immer vier Zahlen angegeben. Neben der
+Anzahl der Gruppen (ergibt sich aus den Eingaben), werden der benötigte
+Stichprobenumfang pro Gruppe und der Gesamtstichprobenumfang angegeben. Die
+Stichprobenumfänge werden immer auf ganze Zahlen gerundet. In jeder Gruppe des
+geplanten Versuchdesigns sollte der angegebene Stichprobenumfang erreicht
+werden, um mindestens die gewünschte Power zu erreichen.</p>
+<p>Da der Stichprobenumfang immer auf ganze Zahlen aufgerundet wird, ergeben
+sich leichte Änderungen bezüglich der Power, die erreicht werden kann. Diese
+aktualisierte Power ist ebenfallls angegeben und ist in der Regel minimal
+größer als die angegebene Power.</p>
+
+<h4>Post-hoc Berechnung der Power</h4>
+Es werden die Anzahl der Gruppen und der Stichprobenumfang pro Gruppe angezeigt.
+Diese werden aus der Eingabe übernommen. Zusätzlich wird der Gesamtstichprobenumfang
+über alle Gruppen angezeigt. Darunter wird der errechnete Wert der erreichten Power
+ausgegeben.
+
+<p>Unterhalb der Text-Ausgaben wird die Analyse zusätzlich grafisch
+dargesellt. Es werden die zentrale und die nicht-zentrale Verteilung
+(entsprechend der Test-Auswahl) mit ihrem Überlapp aufgetragen. Dabei entspricht
+die zentrale Verteilung der Nullhypothese (H<sub>0</sub>) des statistischen Tests,
+die besagt, dass es keinen Unterschied zwischen den Mittelwerten der Gruppen bzw.
+dem Mittelwert und dem zu testenden Mittelwert gibt. Die zentrale Verteilung
+besitzt ihr Maxiumum immer bei x = 0. Die nicht-zentrale Verteilung entspricht
+der Alternativhypothese (H<sub>A</sub>). Die Form und Lage der nicht-zentralen
+Verteilung werden durch den Nichtzentralitätsparameter bestimmt. Letzterer ist
+im Fall des t-Tests von der Art des Testdesigns, dem ermittelten
+Stichprobenumfang, der Standardabweichung und dem Mittelwertsunterschied
+abhängig. Im Fall der ANOVA ist der Nichtzentralitätsparameter von dem
+ermittelten Stichprobenumfang und der Effektstärke abhängig. Details sind in den
+<a href="#funktion">Hinweisen zur Implementierung</a> zu finden. <br>
+In der Abbildung wird zudem der kritische Wert eingezeichnet, ab dem Werte als
+signifikant verschieden betrachtet werden (die Nullhypothese wird abgelehnt und
+die Alternativhypothese angenommen). Der Bereich der zentralen Verteilung mit
+x-Werten größer als dem kritischen Wert entspricht dem &alpha;-Fehler (also einer
+falschen Ablehung der Nullhypothese). Bei ungerichteten Hypothesen teilt sich
+der &alpha;-Fehler symmetrisch auf beide Enden der Verteilung auf, sodass an
+beiden Enden ein Bereich von &alpha;/2 existiert. Bei gerichteten Hypothesen
+befindet sich der Bereich des &alpha;-Fehlers nur an einem Ende der Verteilung.
+Der Bereich der nicht-zentralen Verteilung mit x-Werten kleiner als dem
+kritischen Wert entspricht dem &beta;-Fehler (also einer falschen
+Nicht-Ablehung der Nullhypothese). Die Veranschaulichung des &alpha;- und
+&beta;-Fehlers soll dabei helfen, die zu erwartenden Wahrscheinlichkeiten für
+die möglichen Fehler bei der Durchführung von statistischen Tests
+einzuschätzen.</p>
+
+<h3 id="funktion">Wie funktioniert die App im Hintergrund? - Hinweise zur
+Implementierung</h3>
+<h5>Für den t-Test</h5>
+<p>Zur Berechnung der Stichprobenumfänge bei einem t-Test wird die R-Funktion
+<code>power.t.test</code> aus dem Standard-Paket <i>stats</i> genutzt. Diese
+Funktion kann für alle t-Tests angewendet werden. Neben der Art des t-Tests
+(gerichtet/ungerichtet, eine/zwei Stichprobe/n) benötigt die Funktion den
+Mittelwertsabstand, die Standardabweichung, das Signifikanzniveau und die Power.
+Der benötigte Stichprobenumfang wird der Rückgabe entnommen und auf eine
+ganze Zahl gerundet. <br>
+Die Funktion <code>power.t.test</code> kann nicht nur Stichprobenumfänge
+berechnen, sondern kann abgesehen von der Art des t-Tests jeden der
+Eingabeparameter berechnen, wenn alle anderen Parameter gegeben sind. Zur
+Berechnung der neuen Power, die sich nach dem Runden des berechneten
+Stichprobenumfangs auf eine ganze Zahl ergibt, wird also erneut
+<code>power.t.test</code> aufgerufen. Dieses mal wird allerdings der gerundete
+Stichprobenumfang angegeben und die Angabe der Power freigelassen. <br>
+Auf die gleiche Weise wird auch die post-hoc Power-Berechnung vorgenommen.</p>
+
+<b>Zentrale und nicht-zentrale t-Verteilung</b><br>
+Die zentrale t-Verteilung hat einen Nichtzentralitätsparameter von
+<formel>&delta;</formel> = 0. Für einen t-Test mit zwei ungepaarten Stichproben
+berechnet sich der Nichtzentralitätsparameter entsprechend der Formel 1. Für
+t-Tests mit einer Stichprobe oder zwei gepaarten Stichproben, wird die Formel 2
+angewendet.
+<table>
+  <tr>
+    <td width="50px">[1]</td>
+    <td width="260px">
+      <img src="delta_2upStichproben_Definition.png" width="125px"></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="tabErklaerung">
+      <img src="Mittelwert12.png" width="40px">: Mittelwerte der
+      Stichproben, <formel>&sigma;</formel>: Standardabweichung (wird als gleich
+      angenommen für beide Stichproben), <formel>n</formel>: Stichprobenumfang
+      pro Gruppe</td>
+  </tr>
+  <tr>
+    <td width="50px">[2]</td>
+    <td width="260px">
+      <img src="delta_1_2gpStichproben_Definition.png" width="125px"></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="tabErklaerung"><formel>n</formel>: Stichprobenumfang
+    (für eine Stichprobe) bzw. Anzahl der gepaarten Datenpunkte</td>
+  </tr>
+</table>
+
+<h5>Für die ANOVA</h5>
+<p>Zur Berechnung der Stichprobenumfänge für eine ANOVA wird die Funktion
+<code>pwr.anova.test</code> aus dem Paket <i>pwr</i> genutzt. Diese Funktion
+ist in ihrer Funktionsweise sehr ähnlich zu der entsprechenden Funktion für den
+t-Test (siehe oben). Im R-Standardpaket <i>stats</i> gibt es zudem die Funktion
+<code>power.anova.test</code>, auf der <code>pwr.anova.test</code> aufgebaut
+ist. Die beiden Funktionen unterscheiden sich allerdings minimal in ihren
+Eingabeargumenten und der Berechnung des Stichprobenumfangs. Die Anzahl der
+Gruppen (<formel>k</formel>) geht in der <code>power.anova.test</code>-Funktion
+intern mit einem Faktor (<formel>k-1</formel>) in den Nichtzentralitätsparameter
+ein, während dies bei der <code>pwr.anova.test</code>-Funktion ein Faktor von
+<formel>k</formel> ist. Da auch Cohen (1988) einen Faktor <formel>k</formel>
+benutzt (siehe unten), wird innerhalb der App die Funktion
+<code>pwr.anova.test</code> genutzt.
+Der errechente Stichprobenumfang pro Gruppe
+wird auf ganze Zahlen gerundet und dann mit der Anzahl der Gruppen multipliziert,
+um den Gesamtumfang zu erhalten. <br>
+Zur Ermittlung der Stichprobenumfänge wird als Eingabeparameter eine Abschätzung
+der Effektstärke benötigt. Die beiden für die ANOVA am häufigsten benutzten Maße
+<formel>f</formel> und <formel>&eta;<sup>2</sup></formel> lassen sich
+entsprechend der Formeln 3 und 4 berechnen. <br>
+<table>
+  <tr>
+    <td width="50px">[3, 4]</td>
+    <td width="130px"><img src="fWert_Definition.png" width="75px"></td>
+    <td width="130px"><img src="etaWert_Definition.png" width="75px"></td>
+    <td>(Cohen, 1988, S. 281)</td>
+  </tr>
+  <tr>
+    <td colspan="4" class="tabErklaerung">
+      <formel>&sigma;<sub>m</sub><sup>2</sup></formel>: Varianz
+      der Mittelwerte, <formel>&sigma;<sup>2</sup></formel>: Varianz innerhalb
+      der Gruppen (wird in allen Gruppen als gleich angenommen),
+      <formel>&sigma;<sub>t</sub><sup>2</sup> = &sigma;<sub>m</sub><sup>2</sup>+
+        &sigma;<sup>2</sup></formel>: totale Varianz</td>
+  </tr>
+</table>
+<br>
+
+Die App akzeptiert beide Effektstärkemaße. Da die <code>pwr.anova.test</code>-
+Funktion mit dem Maß <formel>f</formel> arbeitet, werden
+<formel>&eta;<sup>2</sup></formel> Werte entsprechend der Formel 5 umgerechnet.
+</p>
+
+<table>
+  <tr>
+    <td width="50px">[5]</td>
+    <td width="260px"><img src="etaWert_Umrechnung.png" width="95px"></td>
+    <td>(Cohen, 1988, S. 284)</td>
+  </tr>
+</table>
+
+<p>Durch eine Beschränkung der Funktion <code>pwr.anova.test</code> kann es bei
+zu großen Effektstärken zu einer Fehlermeldung kommen. Der genaue Wert hängt
+auch von den anderen Eingaben ab, so kann bei den Beispielwerten nur mit
+Effektstärken von <formel>f &lt;</formel> 2.3 gerechnet werden. <br>
+Die aktualisierte Power auf Basis der gerundeten Stichprobenumfänge wird hier
+analog zum t-Test berechnet. <br>
+Die post-hoc Power-Berechnung wird ebenfalls mit der Funktion
+<code>pwr.anova.test</code> durchgeführt.</p>
+
+<b>Zentrale und nicht-zentrale F-Verteilung</b>
+<p>Die zentrale F-Verteilung hat einen Nichtzentralitätsparameter von
+<formel>&lambda; = 0</formel>. Für die nicht-zentrale F-Verteilung wird der
+Nichtzentralitätsparameter <formel>&lambda;</formel> entsprechend der Formel 6
+bestimmt.</p>
+
+<table>
+  <tr>
+    <td width="50px">[6]</td>
+    <td width="260px"><img src="lambda_Definition.png" width="95px"></td>
+    <td>(vereinfacht aus Cohen, 1988, S. 550)</td>
+  </tr>
+  <tr>
+    <td colspan="3" class="tabErklaerung">
+      <formel>n</formel>: Stichprobenumfang pro Gruppe,
+      <formel>k</formel>: Anzahl der Gruppen</td>
+  </tr>
+</table>
+<br>
+
+Die Werte der zentralen und nicht-zentralen Verteilung werden mit dem Befehl
+<code>df(x,dfs,dfu,lambda)</code> bestimmt, wobei dfs für die Freiheitsgrade der
+systematischen Varianz (Anzahl der Gruppen - 1) steht und dfu für die
+Freiheitsgrade der unsystematische Varianz (Gesamtstichprobenumfang - Anzahl der
+Gruppen). Lambda ist der Nichtzentralitätsparameter.
+<br>
+Der kritische F-Wert berechnet sich als 1-&alpha; Quantil der zentralen
+F-Verteilung mit den Freiheitsgraden dfs und dfu:
+<img src="F_krit.png" width="125px">. Dafür wird der R-Befehl
+<code>qf(1-alpha,dfs,dfu)</code> genutzt.
+
+<h5>Literatur</h5>
+<p>Cohen, J. (1988). <i>Statistical Power Analysis for the Behavioral Sciences.
+</i></p>
+
+<a href="#oben">
+<div id='buttonUp'>
+  &#9650; Zurück zum Inhaltsverzeichnis
+</div>
+</a>
